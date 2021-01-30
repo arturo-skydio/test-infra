@@ -606,6 +606,8 @@ tide:
 #  - labels: [ "area/deflake" ]
 #  # prioritize critical bugfixes
 #  - labels: [ "kind/bug", "priority/critical-urgent" ]
+#  # this will allow tide to pick PRs for batch builds even if there is no first successful build
+#  batch_skip_tests: false
 
 push_gateway:
   endpoint: pushgateway
