@@ -156,10 +156,10 @@ type Tide struct {
 	// PRs should match all labels contained in a list to be prioritized
 	Priority []TidePriority `json:"priority,omitempty"`
 
-	// BatchSkipTests allows tide to select PRs without the need for a first successful
-	// presubmit(s) build, this is intended to increase the likelihood of batch PRs, with
+	// BatchSkipTests is a config that allows tide to select PRs without the need for a first
+	// successful presubmit(s) build, this is intended to increase the likelihood of batch PRs, with
 	// the possible side-effect of increasing the likelihood of failures on batch builds
-	BatchSkipTests bool `json:"batch_skip_tests,omitempty"`
+	BatchSkipTests *bool `json:"batch_skip_tests,omitempty"`
 }
 
 func (t *Tide) BatchSizeLimit(repo OrgRepo) int {

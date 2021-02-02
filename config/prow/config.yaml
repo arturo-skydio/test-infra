@@ -599,6 +599,8 @@ tide:
             skip-unknown-contexts: true
   batch_size_limit:
     "kubernetes/kubernetes": 15
+  # this will allow tide to pick PRs for batch builds even if there is no first successful build
+  batch_skip_tests: false
 #  TODO uncomment after merging #20468
 #  priority:
 #  # prioritize PRs fixing flaking/failing tests
@@ -606,8 +608,6 @@ tide:
 #  - labels: [ "area/deflake" ]
 #  # prioritize critical bugfixes
 #  - labels: [ "kind/bug", "priority/critical-urgent" ]
-#  # this will allow tide to pick PRs for batch builds even if there is no first successful build
-#  batch_skip_tests: false
 
 push_gateway:
   endpoint: pushgateway

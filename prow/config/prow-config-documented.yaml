@@ -721,8 +721,9 @@ tide:
     batch_size_limit:
         "": 0
 
-    # BatchSkipTests allows tide to pick PRs for batch testing even if they have not
-    # had a first successful build as an individual PR
+    # BatchSkipTests is a config that allows tide to select PRs without the need for a first
+    # successful presubmit(s) build, this is intended to increase the likelihood of batch PRs, with
+    # the possible side-effect of increasing the likelihood of failures on batch builds
     batch_skip_tests: false
 
     # BlockerLabel is an optional label that is used to identify merge blocking

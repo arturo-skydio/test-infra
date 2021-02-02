@@ -1011,9 +1011,10 @@ func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker) ([]PullReq
 	// we must choose the oldest PRs for the batch
 	sort.Slice(sp.prs, func(i, j int) bool { return sp.prs[i].Number < sp.prs[j].Number })
 
+	batchSkipTests := c.config().Tide.BatchSkipTests
 	var candidates []PullRequest
 	for _, pr := range sp.prs {
-		if c.config().Tide.BatchSkipTests || isPassingTests(sp.log, c.ghc, pr, cc[int(pr.Number)]) {
+		if batchSkipTests || isPassingTests(sp.log, c.ghc, pr, cc[int(pr.Number)]) {
 			candidates = append(candidates, pr)
 		}
 	}
