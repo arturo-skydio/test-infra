@@ -247,7 +247,7 @@ const (
 	initUploadName   = "initupload"
 	sidecarName      = "sidecar"
 	cloneRefsName    = "clonerefs"
-	cloneRefsCommand = "/clonerefs"
+	cloneRefsCommand = "/bin/sh -c"
 )
 
 // cloneEnv encodes clonerefs Options into json and puts it into an environment variable
@@ -413,9 +413,9 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 	cloneMounts = append(cloneMounts, mount)
 	cloneVolumes = append(cloneVolumes, volume)
 
-	var cloneArgs []string
 	var cookiefilePath string
 
+	cloneArgs := []string{"mkdir -p /home/prow/go/src/github.com/Skydio/aircam && cd /home/prow/go/src/github.com/Skydio/aircam && git init && rm -rf .git/hooks && git stash -u || true && /clonerefs"}
 	if cp := pj.Spec.DecorationConfig.CookiefileSecret; cp != "" {
 		v, vm, vp := cookiefileVolume(cp)
 		cloneMounts = append(cloneMounts, vm)
@@ -442,7 +442,7 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 	container := coreapi.Container{
 		Name:         cloneRefsName,
 		Image:        pj.Spec.DecorationConfig.UtilityImages.CloneRefs,
-		Command:      []string{cloneRefsCommand},
+		Command:      strings.Split(cloneRefsCommand, " "),
 		Args:         cloneArgs,
 		Env:          env,
 		VolumeMounts: append([]coreapi.VolumeMount{logMount, codeMount}, cloneMounts...),
@@ -632,7 +632,10 @@ func CodeMountAndVolume() (coreapi.VolumeMount, coreapi.Volume) {
 		}, coreapi.Volume{
 			Name: codeMountName,
 			VolumeSource: coreapi.VolumeSource{
-				EmptyDir: &coreapi.EmptyDirVolumeSource{},
+				HostPath: &coreapi.HostPathVolumeSource{
+					Path: "/mnt/prowjob-cache",
+				},
+				//EmptyDir: &coreapi.EmptyDirVolumeSource{},
 			},
 		}
 }
