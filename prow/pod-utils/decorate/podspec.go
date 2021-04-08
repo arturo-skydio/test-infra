@@ -415,7 +415,7 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 
 	var cookiefilePath string
 
-	cloneArgs := []string{"mkdir -p /home/prow/go/src/github.com/Skydio/aircam && cd /home/prow/go/src/github.com/Skydio/aircam && git init && rm -rf .git/hooks && git stash -u || true && /clonerefs"}
+	cloneArgs := []string{"mkdir -p /home/prow/go/src/github.com/Skydio/aircam && cd /home/prow/go/src/github.com/Skydio/aircam && git init && rm -rf .git/hooks && git clean -df && git reset --hard master && git stash -u || true && /clonerefs"}
 	if cp := pj.Spec.DecorationConfig.CookiefileSecret; cp != "" {
 		v, vm, vp := cookiefileVolume(cp)
 		cloneMounts = append(cloneMounts, vm)
