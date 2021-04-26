@@ -219,10 +219,13 @@ func (c *Controller) Sync() error {
 	}
 
 	var reportErrs []error
-	if !c.skipReport {
-		reportConfig := c.cfg().GitHubReporter
-		jConfig := c.config()
-		for report := range reportCh {
+	reportTypes := c.cfg().GitHubReporter.JobTypesToReport
+	jConfig := c.config()
+	for report := range reportCh {
+		// Report status if pending, otherwise crier doesn't know when link is available
+		// We always want to report the status URL, when state changes from enqueued to running
+		if !c.skipReport || report.Status.Description == "Jenkins job running." {
+			reportConfig := c.cfg().GitHubReporter
 			reportTemplate := jConfig.ReportTemplateForRepo(report.Spec.Refs)
 			if err := reportlib.Report(context.Background(), c.ghc, reportTemplate, report, reportConfig); err != nil {
 				reportErrs = append(reportErrs, err)
