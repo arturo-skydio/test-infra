@@ -1,0 +1,117 @@
+presubmits:
+- name: pull-test-infra-bazel
+	always_run: true
+	optional: true
+	decorate: true
+	labels:
+		preset-service-account: "true"
+		preset-bazel-scratch-dir: "true"
+	spec:
+    tolerations:
+    - key: "workload.skyd.io/kind"
+      operator: "Equal"
+      value: "prowjob"
+      effect: "NoSchedule"
+    nodeSelector:
+      workload.skyd.io/kind: "prowjob"
+		containers:
+		- image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20220314-46af1b01a6-test-infra
+			command:
+			- hack/bazel.sh
+			args:
+			- test
+			- --config=ci
+			- --nobuild_tests_only
+			- //...
+			env:
+			- name: BAZEL_FETCH_PLEASE
+				value: //...
+      resources:
+        requests:
+          cpu: "4"
+          memory: "4G"
+      securityContext:
+        privileged: true
+- name: verify-lint
+  always_run: true
+  decorate: true
+  optional: true
+  clone_uri: "git@github.com:skydio/test-infra-private.git"
+  labels:
+    # Enable dind for linters that required docker to run, for example typescript.
+    preset-dind-enabled: "true"
+  spec:
+    tolerations:
+    - key: "workload.skyd.io/kind"
+      operator: "Equal"
+      value: "prowjob"
+      effect: "NoSchedule"
+    nodeSelector:
+      workload.skyd.io/kind: "prowjob"
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-test-infra
+      command:
+      - runner.sh
+      args:
+      - make
+      - verify
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+- name: unit-test
+  always_run: true
+  decorate: true
+  optional: true
+  clone_uri: "git@github.com:skydio/test-infra-private.git"
+  spec:
+    tolerations:
+    - key: "workload.skyd.io/kind"
+      operator: "Equal"
+      value: "prowjob"
+      effect: "NoSchedule"
+    nodeSelector:
+      workload.skyd.io/kind: "prowjob"
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-test-infra
+      command:
+      - runner.sh
+      args:
+      - make
+      - unit
+
+presets:
+- labels:
+    preset-dind-enabled: "true"
+  env:
+  - name: DOCKER_IN_DOCKER_ENABLED
+    value: "true"
+  volumes:
+  # kubekins-e2e legacy path
+  - name: docker-graph
+    emptyDir: {}
+  # krte (normal) path
+  - name: docker-root
+    emptyDir: {}
+  volumeMounts:
+  - name: docker-graph
+    mountPath: /docker-graph
+  - name: docker-root
+    mountPath: /var/lib/docker
+- labels:
+    preset-bazel-scratch-dir: "true"
+  env:
+  - name: TEST_TMPDIR
+    value: /bazel-scratch/.cache/bazel
+  volumes:
+  - name: bazel-scratch
+		hostPath:
+			path: /ephemeral0
+  volumeMounts:
+  - name: bazel-scratch
+		mountPath: /bazel-scratch/.cache
+		subPathExpr: $(POD_NAME)
+- labels:
+    preset-bazel-remote-cache-enabled: "true"
+  env:
+  - name: BAZEL_REMOTE_CACHE_ENABLED
+    value: "true"
