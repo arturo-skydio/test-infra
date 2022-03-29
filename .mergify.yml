@@ -11,4 +11,4 @@ queue_rules:
     batch_size: 3
     speculative_checks: 3
     conditions:
-      - label="fake check merge"
+      - check-success=Fake-Check done
